@@ -291,7 +291,7 @@ def get_model(model_name):
         return model_trans
     elif model_name == 'new':
         diffusion = mutils.create_model(mutils.parse_config('diffusion_configs/cifar10.yml'))
-        diffusion.module
+        diffusion = diffusion.module
         rev_diff = RevDiff(diffusion)
         return rev_diff
 

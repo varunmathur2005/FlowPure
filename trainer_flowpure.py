@@ -69,7 +69,7 @@ if __name__ == "__main__":
             if step % snapshot_freq == 0:
                 print("SAVING")
                 states = [
-                    net_model.state_dict(),
+                    net_model.model.state_dict(),
                     optim.state_dict(),
                 ]
                 os.makedirs(f'resources/checkpoints/flowpure_{noise_type}', exist_ok=True)
