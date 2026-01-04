@@ -11,12 +11,11 @@ from utils import *
 
 
 if __name__ == '__main__':
-
-    for dataset in ['CIFAR10', 'CIFAR100']:
-        for purification_method in ['gauss_flowpure_0.15', 'gauss_flowpure_0.2', 'cw_flowpure', 'pgd_flowpure',
-                                    'diffpure', 'gdmp', 'llhd_maximize', 'adbm']:
+    
+    for dataset in ['CIFAR10']:
+        for purification_method in ['gauss_flowpure_0.15', 'gauss_flowpure_0.2', 'cw_flowpure', 'pgd_flowpure']:
             accuracy = None
-            for attack_type in ['class_pgd', 'class_cw']:
+            for attack_type in ['class_pgd', 'class_cw', 'transfer_pgd', 'transfer_cw']:
                 cfg = get_config(purification_method, dataset, attack_type, 0, 32, 10000)
                 cfg.NAME = f"{attack_type}"
                 cfg.OUTPUT_DIR = 'dir'

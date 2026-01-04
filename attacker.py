@@ -23,6 +23,9 @@ class Attacker:
         self.B, self.N = config.DATA.BATCH_SIZE, config.DATA.NUM
         self.n_batch = self.N // self.B
         self.path = f'{config.OUTPUT_DIR}/{config.EXP or config.DEFENSE.METHOD}/{config.NAME}/'
+        self.surrogate = None
+        if hasattr(self.config, "METHOD_ACTUAL") and self.config.METHOD_ACTUAL in ["transfer_pgd", "transfer_cw"]:
+            self.surrogate = get_model(self.config.SURROGATE_NAME)
 
     def initialize(self, x):
         t = torch.rand_like(x)
@@ -277,6 +280,28 @@ class Attacker:
             # logits = self.model.classifier(x)
             # print(judge_success(logits, y, y_target).sum())
             return adv_sample, log
+        if self.config.METHOD_ACTUAL == 'transfer_pgd':
+            surrogate = self.surrogate
+            fmodel = fb.PyTorchModel(surrogate, bounds=(0., 1.))
+
+            atk_fb = LinfPGD(abs_stepsize=self.config.PGD_STEP_SIZE, steps=self.n_iter)
+            adv_sample = atk_fb(fmodel, x.detach(), y, epsilons=self.config.EPS)[1]
+
+            for j in range(self.n_eval):
+                logits = self.model(adv_sample)
+                loss = self.loss(logits, y)
+                success = judge_success(logits, y, y_target)
+                log = self.log_metrics(log, logits, loss, success)
+
+            self.x_adv_best = adv_sample
+            self.x_adv = adv_sample
+            self.logger.info(f"{self.metric_str} {self.batch_str} "
+                            f"{self.restart_str} {self.iter_str}: "
+                            f"adv loss avg. {self.avg(log['loss']):.2f} "
+                            f"wor. {self.worst(log['loss']):.2f}, "
+                            f"adv asr avg. {self.avg(log['success']):.2f} "
+                            f"wor. {self.worst(log['success']):d} in {self.B:d}.")
+            return adv_sample, log
         if self.config.METHOD_ACTUAL == 'class_cw':
             fmodel = fb.PyTorchModel(self.model.classifier, bounds=(0., 1.))
             atk_fb = fb.attacks.carlini_wagner.L2CarliniWagnerAttack(steps=50)
@@ -300,7 +325,29 @@ class Attacker:
             # logits = self.model.classifier(x)
             # print(judge_success(logits, y, y_target).sum())
             return adv_sample, log
+        if self.config.METHOD_ACTUAL == 'transfer_cw':
+            surrogate = self.surrogate
+            fmodel = fb.PyTorchModel(surrogate, bounds=(0., 1.))
 
+            atk_fb = fb.attacks.carlini_wagner.L2CarliniWagnerAttack(steps=50)
+            adv_sample = atk_fb(fmodel, x.detach(), y, epsilons=3)[1]
+
+            for j in range(self.n_eval):
+                logits = self.model(adv_sample)
+                loss = self.loss(logits, y)
+                success = judge_success(logits, y, y_target)
+                log = self.log_metrics(log, logits, loss, success)
+
+            self.x_adv_best = adv_sample
+            self.x_adv = adv_sample
+            self.logger.info(f"{self.metric_str} {self.batch_str} "
+                            f"{self.restart_str} {self.iter_str}: "
+                            f"adv loss avg. {self.avg(log['loss']):.2f} "
+                            f"wor. {self.worst(log['loss']):.2f}, "
+                            f"adv asr avg. {self.avg(log['success']):.2f} "
+                            f"wor. {self.worst(log['success']):d} in {self.B:d}.")
+            return adv_sample, log
+        
         self.x_adv_best = self.x_adv.clone()
         self.init_params()
 

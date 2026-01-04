@@ -13,6 +13,7 @@ from models.unets.EDM import get_edm_cifar_uncond
 from models.guided_diffusion.script_util import create_model_and_diffusion, model_and_diffusion_defaults
 from models.SmallResolutionModel import WideResNet_70_16_dropout
 import score_sde.models.utils as mutils
+from networks.vggnet import VGG
 
 import warnings
 warnings.filterwarnings("ignore")
@@ -286,6 +287,16 @@ def get_model(model_name):
         model.eval()
         model.to('cuda')
         # model_trans = lambda x: model(transform(x))
+        model_trans = TransClassifier(transform, model)
+        model_trans.eval()
+        return model_trans
+    elif model_name == "vgg16_c10":
+        mean = [0.4914, 0.4822, 0.4465]
+        std = [0.2471, 0.2435, 0.2616]
+        transform = transforms.Normalize(mean, std)
+        model = torch.load("./resources/checkpoints/victims/vgg-16-c10.t7", weights_only=False)['net']
+        model.eval()
+        model.to('cuda')
         model_trans = TransClassifier(transform, model)
         model_trans.eval()
         return model_trans

@@ -54,10 +54,21 @@ def update_attack(cfg, attack_type):
         cfg.ATTACK.N_ITERS = [10]
         cfg.ATTACK.N_RESTART = 1
         cfg.ATTACK.PGD_STEP_SIZE = 2/255
+    elif attack_type == 'transfer_pgd':
+        cfg.ATTACK.METHOD_ACTUAL = 'transfer_pgd'
+        cfg.ATTACK.N_ITERS = [10]
+        cfg.ATTACK.N_RESTART = 1
+        cfg.ATTACK.PGD_STEP_SIZE = 2/255
+        cfg.ATTACK.SURROGATE_NAME = 'vgg16_c10'
     elif attack_type == 'class_cw':
         cfg.ATTACK.METHOD_ACTUAL = 'class_cw'
         cfg.ATTACK.N_ITERS = [50]
         cfg.ATTACK.N_RESTART = 1
+    elif attack_type == 'transfer_cw':
+        cfg.ATTACK.METHOD_ACTUAL = 'transfer_cw'
+        cfg.ATTACK.N_ITERS = [50]
+        cfg.ATTACK.N_RESTART = 1
+        cfg.ATTACK.SURROGATE_NAME = 'vgg16_c10'
     else:
         raise Exception(f"{attack_type} is not implemented!")
 

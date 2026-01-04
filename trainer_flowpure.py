@@ -76,4 +76,3 @@ if __name__ == "__main__":
                 torch.save(states, os.path.join(f'resources/checkpoints/flowpure_{noise_type}/{ckpt_name}_{step}.pth'))
                 torch.save(states, os.path.join(f'resources/checkpoints/flowpure_{noise_type}/{ckpt_name}.pth'))
             step += 1
-

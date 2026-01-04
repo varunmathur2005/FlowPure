@@ -12,9 +12,8 @@ from utils import *
 
 if __name__ == '__main__':
 
-    for dataset in ['CIFAR10', 'CIFAR100']:
-        for purification_method in ['gauss_flowpure_0.15', 'gauss_flowpure_0.2', 'cw_flowpure', 'pgd_flowpure',
-                                    'diffpure', 'gdmp', 'llhd_maximize', 'adbm']:
+    for dataset in ['CIFAR10']:
+        for purification_method in ['gauss_flowpure_0.15']:
             accuracy = None
             for sample_run in [1,2,3]:
                 cfg = get_config(purification_method, dataset, 'DH', sample_run, 32, 512)
